@@ -25,6 +25,7 @@ router.post('/summarize/pdf', async (req, res) => {
 		let responseString = '';
 		const {text} = await pdfParse(pdfFile);
 		let temp = text;
+		temp = temp.replace(/\n/g, '');
 		let lines = [];
 		while (temp != '') {
 			lines.push(temp.slice(0, 5500));
@@ -37,7 +38,7 @@ router.post('/summarize/pdf', async (req, res) => {
 				temperature: 0.8,
 				max_tokens: 500,
 			});
-			responseString = (i > 0) ? responseString + ' ' + completion.data.choices[0].text : responseString + completion.data.choices[0].text;
+			responseString = responseString + ' ' + completion.data.choices[0].text;
 		};
 		res.status(200).json({ result: responseString });
 	} catch(error) {
