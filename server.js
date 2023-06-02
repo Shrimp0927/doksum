@@ -29,9 +29,10 @@ app.use(loginRoutes);
 app.use(gptRoutes);
 
 if (process.env.DS == 'production') {
-	app.use(express.static('./client/dist'));
+	const path = require('path');
+	app.use(express.static(path.resolve('./client/dist')));
 	app.use('*', (req, res) => {
-		res.sendFile('./client/dist/index.html');
+		res.sendFile('index.html', {root: path.resolve('./client/dist')});
 	});
 }
 
