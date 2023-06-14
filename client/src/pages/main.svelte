@@ -35,8 +35,20 @@
 			});
 
 			if (response.ok) {
-				const data = await response.json();
-				pdfText = data.result;
+				const reader = response.body.getReader();
+				let result = '';
+
+				while (true) {
+					const { value, done } = await reader.read();
+
+					if (done) {
+						break;
+					};
+
+					const chunk = new TextDecoder('utf-8').decode(value);
+					result += chunk;
+				};
+				pdfText = result;
 			}
 		} catch(error) {
 			console.log(error);

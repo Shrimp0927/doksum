@@ -13,7 +13,7 @@ const openai = new OpenAIApi(configuration);
 const router = express.Router();
 router.use(fileUpload());
 
-router.post('/summarize/pdf', requireLogin,async (req, res) => {
+router.post('/summarize/pdf', requireLogin, async (req, res) => {
 	if (!req.files || Object.keys(req.files).length == 0) {
 		return res.status(400).send('No files uploaded');
 	};
@@ -21,11 +21,14 @@ router.post('/summarize/pdf', requireLogin,async (req, res) => {
 	const pdfFile = req.files.pdfFile.data;
 	if (!pdfFile) {
 		return res.status(400).send('The file uploaded isn\'t a pdf');
-	}
+	};
 
 	try {
-		let responseString = '';
 		let {text} = await pdfParse(pdfFile);
+
+		res.setHeader('Transfer-Encoding', 'chunked');
+		res.setHeader('Content-Type', 'text/plain');
+
 		while (text != '') {
 			const completion = await openai.createChatCompletion({
 				model: "gpt-3.5-turbo",
@@ -35,14 +38,15 @@ router.post('/summarize/pdf', requireLogin,async (req, res) => {
 				temperature: 0.8,
 				max_tokens: 500,
 			});
-			responseString = responseString + ' ' + completion.data.choices[0].message.content;
+			const responseString = completion.data.choices[0].message.content + ' ';
+			res.write(responseString);
 			text = text.slice(5500);
-		}
-		res.status(200).json({ result: responseString });
+		};
+		res.end();
 	} catch(error) {
 		console.error(`There is an error while calling gpt api: ${error}`);
 		res.status(400).json({ message: `${error}` })
-	}
+	};
 });
 
 function generatePrompt(text) {
