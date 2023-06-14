@@ -47,6 +47,7 @@
 
 					const chunk = new TextDecoder('utf-8').decode(value);
 					result += chunk;
+					console.log(chunk);
 				};
 				pdfText = result;
 			}
