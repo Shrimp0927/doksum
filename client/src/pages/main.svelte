@@ -48,8 +48,8 @@
 					const chunk = new TextDecoder('utf-8').decode(value);
 					result += chunk;
 					console.log(chunk);
+					pdfText = result;
 				};
-				pdfText = result;
 			}
 		} catch(error) {
 			console.log(error);
@@ -76,9 +76,7 @@
 		</div>
 	{/if}
 	<div class="text-center text-purple lg:pl-12 lg:pr-12 pt-6 pl-2 pr-2 font-serif w-[100%]">
-		{#if !textLoading}
-			<p>{pdfText}</p>
-		{/if}
+		<p>{pdfText}</p>
 		{#if textLoading}
 			<div class="mt-4">
 				<div class="mt-2 animate-pulse w-[100%] h-4 bg-slate"></div>
