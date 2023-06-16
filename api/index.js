@@ -23,34 +23,37 @@ router.post('/summarize/pdf', requireLogin, async (req, res) => {
 		return res.status(400).send('The file uploaded isn\'t a pdf');
 	};
 
+	res.setHeader('Cache-Control', 'no-cache');
+	res.setHeader('Transfer-Encoding', 'chunked');
+	res.setHeader('Content-Type', 'text/plain');
+
 	try {
 		let {text} = await pdfParse(pdfFile);
-
-		res.setHeader('Transfer-Encoding', 'chunked');
-		res.setHeader('Content-Type', 'text/plain');
+		res.write('');
 
 		while (text != '') {
+			res.write('');
 			const completion = await openai.createChatCompletion({
 				model: "gpt-3.5-turbo",
 				messages: [
 					{ role: "user", content: generatePrompt(text.slice(0, 5500)) },
 				],
 				temperature: 0.8,
-				max_tokens: 500,
+				max_tokens: 100,
 			});
 			const responseString = completion.data.choices[0].message.content + ' ';
 			res.write(responseString);
-			text = text.slice(5500);
+			text = text.slice(4000);
 		};
-		res.end();
 	} catch(error) {
 		console.error(`There is an error while calling gpt api: ${error}`);
 		res.status(400).json({ message: `${error}` })
 	};
+	res.end();
 });
 
 function generatePrompt(text) {
-	return `Summarize this document:
+	return `Summarize the following:
 		${text}
 	`;
 };

@@ -46,9 +46,8 @@
 					};
 
 					const chunk = new TextDecoder('utf-8').decode(value);
-					result += chunk;
+					pdfText += chunk;
 					console.log(chunk);
-					pdfText = result;
 				};
 			}
 		} catch(error) {
