@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const passport = require('passport');
 const session = require('express-session');
+const bodyParser = require('body-parser');
 const loginRoutes = require('./api/login.js');
 const gptRoutes = require('./api/index.js');
 
@@ -24,6 +25,9 @@ app.use(session({
 
 app.use(passport.initialize());
 app.use(passport.session());
+
+app.use(bodyParser.json({ limit: '10mb' }));
+app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 
 app.use(loginRoutes);
 app.use(gptRoutes);
