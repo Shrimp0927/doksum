@@ -1,7 +1,7 @@
 const express = require('express');
 const passport = require('passport');
-const GoogleStrategy = require('passport-google-oidc');
-const db = require('../firebase.js');
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const firebase = require('../firebase.js');
 
 passport.serializeUser((user, done) => {
 	done(null, user.id);
@@ -9,7 +9,7 @@ passport.serializeUser((user, done) => {
 
 passport.deserializeUser(async (id, done) => {
 	try {
-		const user = await db.collection('users').doc(id).get();
+		const user = await firebase.firestore().collection('users').doc(id).get();
 		done(null, user.data());
 	} catch(error) {
 		console.error(`Error deserialize user: ${error}`);
@@ -21,18 +21,17 @@ passport.use(new GoogleStrategy({
 	clientID: process.env.GOOGLE_CLIENT_ID,
 	clientSecret: process.env.GOOGLE_CLIENT_SECRET,
 	callbackURL: '/login/google/callback',
-	scope: ['profile']
-}, async (issuer, profile, cb) => {
+}, async (accessToken, refreshToken, profile, cb) => {
 	try {
 		const user = {
 			id: profile.id,
 			name: profile.displayName,
 		};
 
-		const existingUser = await db.collection('users').doc(profile.id).get();
+		const existingUser = await firebase.firestore().collection('users').doc(profile.id).get();
 
 		if (!existingUser.exists) {
-			await db.collection('users').doc(profile.id).set(user);
+			await firebase.firestore().collection('users').doc(profile.id).set(user);
 		};
 
 		return cb(null, user);
@@ -44,12 +43,13 @@ passport.use(new GoogleStrategy({
 
 const router = express.Router();
 
-router.get('/login/google', passport.authenticate('google'));
+router.get('/login/google', passport.authenticate('google', { scope: ['profile'] }));
 
-router.get('/login/google/callback', passport.authenticate('google', {
-	successRedirect: '/',
-	failureRedirect: '/login/google',
-}));
+router.get('/login/google/callback',
+	passport.authenticate('google', { failureRedirect: '/login/google' }),
+	(req, res) => {
+		res.redirect('/');
+});
 
 router.get('/api/current_user', (req, res) => {
 	if (req.user) {

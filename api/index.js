@@ -24,7 +24,7 @@ router.post('/summarize/pdf', requireLogin, async (req, res) => {
 
 	const pdfFile = req.files.pdfFile.data;
 	if (!pdfFile) {
-		res.send('The file uploaded isn\'t a pdf');
+		res.write('The file uploaded isn\'t a pdf');
 		res.end();
 	};
 

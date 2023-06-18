@@ -18,6 +18,4 @@ admin.initializeApp({
 //	measurementId: process.env.FIREBASE_MEASUREMENT_ID
 //};
 
-const db = admin.firestore();
-
-module.exports = db;
+module.exports = admin;
