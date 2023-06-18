@@ -30,22 +30,22 @@ router.post('/summarize/pdf', requireLogin, async (req, res) => {
 
 	try {
 		let {text} = await pdfParse(pdfFile);
-		res.write('');
+		res.write(text);
 
-		while (text != '') {
-			res.write('');
-			const completion = await openai.createChatCompletion({
-				model: "gpt-3.5-turbo",
-				messages: [
-					{ role: "user", content: generatePrompt(text.slice(0, 5500)) },
-				],
-				temperature: 0.8,
-				max_tokens: 100,
-			});
-			const responseString = completion.data.choices[0].message.content + ' ';
-			res.write(responseString);
-			text = text.slice(4000);
-		};
+		//while (text != '') {
+		//	res.write('');
+		//	const completion = await openai.createChatCompletion({
+		//		model: "gpt-3.5-turbo",
+		//		messages: [
+		//			{ role: "user", content: generatePrompt(text.slice(0, 5500)) },
+		//		],
+		//		temperature: 0.8,
+		//		max_tokens: 100,
+		//	});
+		//	const responseString = completion.data.choices[0].message.content + ' ';
+		//	res.write(responseString);
+		//	text = text.slice(4000);
+		//};
 	} catch(error) {
 		console.error(`There is an error while calling gpt api: ${error}`);
 		res.status(400).json({ message: `${error}` })
