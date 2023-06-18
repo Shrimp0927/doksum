@@ -14,18 +14,19 @@ const router = express.Router();
 router.use(fileUpload());
 
 router.post('/summarize/pdf', requireLogin, async (req, res) => {
+	res.setHeader('Transfer-Encoding', 'chunked');
+	res.setHeader('Content-Type', 'text/plain');
+
 	if (!req.files || Object.keys(req.files).length == 0) {
-		return res.status(400).send('No files uploaded');
+		res.write('No files uploaded');
+		res.end();
 	};
 
 	const pdfFile = req.files.pdfFile.data;
 	if (!pdfFile) {
-		return res.status(400).send('The file uploaded isn\'t a pdf');
+		res.send('The file uploaded isn\'t a pdf');
+		res.end();
 	};
-
-	res.setHeader('Cache-Control', 'no-cache');
-	res.setHeader('Transfer-Encoding', 'chunked');
-	res.setHeader('Content-Type', 'text/plain');
 
 	try {
 		let {text} = await pdfParse(pdfFile);
