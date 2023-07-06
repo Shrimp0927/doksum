@@ -3,37 +3,23 @@
 	let pdfUploader;
 	let pdfText = '';
 	let pdfUrl = '';
+	let pdfuuid = '';
 	let textLoading = false;
+	let fileUploaded = false;
 	export let loggedIn;
 
 	function handleFileInput() {
 		file = event.target.files[0];
 	}
 
-	async function uploadFiles() {
-		if (!loggedIn) {
-			return;
-		}
-		if (!file) {
-			return;
-		}
+	async function summarizeFile() {
 		textLoading = true;
-		pdfText = '';
-
 		try {
-			const formData = new FormData();
-			formData.append('pdfFile', file);
-
-			pdfUrl = URL.createObjectURL(file);
-
-			file = null;
-			pdfUploader.value = '';
-
-			const response = await fetch('/summarize/pdf', {
+			const response = await fetch('/summarize', {
 				method: 'POST',
-				body: formData,
+				body: { uuid: pdfuuid },
 			});
-
+		
 			if (response.ok) {
 				const reader = response.body.getReader();
 				let result = '';
@@ -49,11 +35,44 @@
 					pdfText += chunk;
 					console.log(chunk);
 				};
-			}
+			};
+		} catch(error) {
+			console.log(error);
+		};
+		textLoading = false;
+		fileUploaded = false;
+	};
+
+	async function uploadFiles() {
+		if (!loggedIn) {
+			return;
+		}
+		if (!file) {
+			return;
+		}
+		pdfText = '';
+
+		try {
+			const formData = new FormData();
+			formData.append('pdfFile', file);
+
+			pdfUrl = URL.createObjectURL(file);
+
+			file = null;
+			pdfUploader.value = '';
+
+			const res = await fetch('/upload', {
+				method: 'POST',
+				body: formData,
+			});
+
+			const resData = await res.json();
+			console.log(resData.uuid);
+			pdfuuid = resData.uuid;
 		} catch(error) {
 			console.log(error);
 		}
-		textLoading = false;
+		fileUploaded = true;
 	}
 </script>
 
@@ -67,9 +86,12 @@
 	{/if}
 	{#if loggedIn}
 		<div class={`text-center lg:pl-12 pt-16 lg:pr-12 pl-2 pr-2 w-[100%]`}>
-			<p class="text-l text-purple font-mono pb-2">Upload your pdf!</p>
+			<p class="text-l text-purple font-mono pb-2">{fileUploaded ? `Upload complete. Click summarize!` : `Upload your pdf!`}</p>
 			<input bind:this={pdfUploader} type="file" on:change={handleFileInput} />
 			<button on:click={uploadFiles} class="text-white rounded px-2 bg-orange hover:bg-brown">
+				upload
+			</button>
+			<button on:click={summarizeFile} class="text-white rounded px-2 bg-purple hover:bg-brown">
 				summarize
 			</button>
 		</div>
