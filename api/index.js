@@ -63,7 +63,6 @@ router.post('/summarize', requireLogin, async (req, res) => {
 					{ role: "user", content: generatePrompt(text.slice(0, 5500)) },
 				],
 				temperature: 0.8,
-				max_tokens: 100,
 			});
 			const responseString = completion.data.choices[0].message.content + ' ';
 			res.write(responseString);
@@ -78,7 +77,7 @@ router.post('/summarize', requireLogin, async (req, res) => {
 });
 
 function generatePrompt(text) {
-	return `Summarize the following:
+	return `Summarize the following to bullet points:
 		${text}
 	`;
 };
